@@ -65,113 +65,118 @@ const UsuariosCrud = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-8 font-sans">
-      <h2 className="text-3xl font-bold text-center text-gray-700 mb-6">Gestión de Usuarios</h2>
+    <div className="bg-pink-50 min-h-screen p-8 font-sans">
+      <h2 className="text-4xl font-bold text-center text-pink-600 mb-10">Gestión de Usuarios</h2>
 
-      <div className="mb-4 flex justify-center items-center">
-        <input
-          type="text"
-          value={newUsuario.nombre}
-          onChange={(e) => setNewUsuario({ ...newUsuario, nombre: e.target.value })}
-          placeholder="Nombre"
-          className="p-2 border border-gray-400 rounded-l-lg focus:outline-none focus:border-gray-600"
-        />
-        <input
-          type="text"
-          value={newUsuario.apellido}
-          onChange={(e) => setNewUsuario({ ...newUsuario, apellido: e.target.value })}
-          placeholder="Apellido"
-          className="p-2 border border-gray-400 focus:outline-none focus:border-gray-600 mx-2"
-        />
-        <input
-          type="email"
-          value={newUsuario.email}
-          onChange={(e) => setNewUsuario({ ...newUsuario, email: e.target.value })}
-          placeholder="Email"
-          className="p-2 border border-gray-400 focus:outline-none focus:border-gray-600 mx-2"
-        />
-        <input
-          type="password"
-          value={newUsuario.password}
-          onChange={(e) => setNewUsuario({ ...newUsuario, password: e.target.value })}
-          placeholder="Password"
-          className="p-2 border border-gray-400 focus:outline-none focus:border-gray-600 mx-2"
-        />
-        <select
-          value={newUsuario.rol}
-          onChange={(e) => setNewUsuario({ ...newUsuario, rol: e.target.value })}
-          className="p-2 border border-gray-400 focus:outline-none focus:border-gray-600"
-        >
-          {roles.map((rol) => (
-            <option key={rol} value={rol}>
-              {rol}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleAddUsuario}
-          className="bg-green-500 text-white px-4 py-2 ml-4 rounded-lg hover:bg-green-600 transition duration-300"
-        >
-          Agregar Usuario
-        </button>
+      {/* Formulario para agregar usuario */}
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <h3 className="text-xl font-semibold text-pink-600 mb-4">Agregar Nuevo Usuario</h3>
+        <div className="flex flex-wrap justify-center gap-4">
+          <input
+            type="text"
+            value={newUsuario.nombre}
+            onChange={(e) => setNewUsuario({ ...newUsuario, nombre: e.target.value })}
+            placeholder="Nombre"
+            className="p-3 rounded-lg border border-pink-300 focus:outline-none focus:ring-pink-400 focus:border-pink-500"
+          />
+          <input
+            type="text"
+            value={newUsuario.apellido}
+            onChange={(e) => setNewUsuario({ ...newUsuario, apellido: e.target.value })}
+            placeholder="Apellido"
+            className="p-3 rounded-lg border border-pink-300 focus:outline-none focus:ring-pink-400 focus:border-pink-500"
+          />
+          <input
+            type="email"
+            value={newUsuario.email}
+            onChange={(e) => setNewUsuario({ ...newUsuario, email: e.target.value })}
+            placeholder="Email"
+            className="p-3 rounded-lg border border-pink-300 focus:outline-none focus:ring-pink-400 focus:border-pink-500"
+          />
+          <input
+            type="password"
+            value={newUsuario.password}
+            onChange={(e) => setNewUsuario({ ...newUsuario, password: e.target.value })}
+            placeholder="Password"
+            className="p-3 rounded-lg border border-pink-300 focus:outline-none focus:ring-pink-400 focus:border-pink-500"
+          />
+          <select
+            value={newUsuario.rol}
+            onChange={(e) => setNewUsuario({ ...newUsuario, rol: e.target.value })}
+            className="p-3 rounded-lg border border-pink-300 focus:outline-none focus:ring-pink-400 focus:border-pink-500"
+          >
+            {roles.map((rol) => (
+              <option key={rol} value={rol}>
+                {rol}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleAddUsuario}
+            className="bg-pink-500 text-white px-5 py-3 rounded-lg shadow-md hover:bg-pink-600 transition duration-300"
+          >
+            Agregar Usuario
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 shadow-lg rounded-lg">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-3 px-4 text-left text-gray-600 font-semibold">Nombre</th>
-              <th className="py-3 px-4 text-left text-gray-600 font-semibold">Apellido</th>
-              <th className="py-3 px-4 text-left text-gray-600 font-semibold">Email</th>
-              <th className="py-3 px-4 text-left text-gray-600 font-semibold">Rol</th>
-              <th className="py-3 px-4 text-left text-gray-600 font-semibold">Acciones</th>
+      {/* Tabla de usuarios */}
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-pink-200">
+          <thead className="bg-pink-100">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-pink-700 uppercase tracking-wider">Nombre</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-pink-700 uppercase tracking-wider">Apellido</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-pink-700 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-pink-700 uppercase tracking-wider">Rol</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-pink-700 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-pink-200">
             {usuarios.map((usuario) => (
-              <tr key={usuario.id} className="border-t">
-                <td className="py-3 px-4">
+              <tr key={usuario.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-pink-900">
                   {editUsuarioId === usuario.id ? (
                     <input
                       type="text"
                       value={editUsuario.nombre}
                       onChange={(e) => setEditUsuario({ ...editUsuario, nombre: e.target.value })}
-                      className="p-2 border rounded-lg border-gray-400 focus:outline-none focus:border-gray-600"
+                      className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     />
                   ) : (
                     usuario.nombre
                   )}
                 </td>
-                <td className="py-3 px-4">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-pink-900">
                   {editUsuarioId === usuario.id ? (
                     <input
                       type="text"
                       value={editUsuario.apellido}
                       onChange={(e) => setEditUsuario({ ...editUsuario, apellido: e.target.value })}
-                      className="p-2 border rounded-lg border-gray-400 focus:outline-none focus:border-gray-600"
+                      className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     />
                   ) : (
                     usuario.apellido
                   )}
                 </td>
-                <td className="py-3 px-4">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-pink-900">
                   {editUsuarioId === usuario.id ? (
                     <input
                       type="email"
                       value={editUsuario.email}
                       onChange={(e) => setEditUsuario({ ...editUsuario, email: e.target.value })}
-                      className="p-2 border rounded-lg border-gray-400 focus:outline-none focus:border-gray-600"
+                      className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     />
                   ) : (
                     usuario.email
                   )}
                 </td>
-                <td className="py-3 px-4">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-pink-900">
                   {editUsuarioId === usuario.id ? (
                     <select
                       value={editUsuario.rol}
                       onChange={(e) => setEditUsuario({ ...editUsuario, rol: e.target.value })}
-                      className="p-2 border rounded-lg border-gray-400 focus:outline-none focus:border-gray-600"
+                      className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     >
                       {roles.map((rol) => (
                         <option key={rol} value={rol}>
@@ -183,28 +188,30 @@ const UsuariosCrud = () => {
                     usuario.rol
                   )}
                 </td>
-                <td className="py-3 px-4">
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   {editUsuarioId === usuario.id ? (
                     <button
                       onClick={handleSaveEdit}
-                      className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 mr-2"
+                      className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition"
                     >
                       Guardar
                     </button>
                   ) : (
-                    <button
-                      onClick={() => handleEditUsuario(usuario.id)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition duration-300 mr-2"
-                    >
-                      Editar
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleEditUsuario(usuario.id)}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition ml-2"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUsuario(usuario.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition ml-2"
+                      >
+                        Eliminar
+                      </button>
+                    </>
                   )}
-                  <button
-                    onClick={() => handleDeleteUsuario(usuario.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
-                  >
-                    Eliminar
-                  </button>
                 </td>
               </tr>
             ))}
