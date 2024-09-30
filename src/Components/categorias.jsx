@@ -1,117 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from './api';
+import { Link } from 'react-router-dom';
 
-const CategoriasCrud = () => {
-  const [categorias, setCategorias] = useState([
-    { id: 1, nombre: 'Polera' },
-    { id: 2, nombre: 'Pantalon' },
-    { id: 3, nombre: 'Top' },
-    { id: 4, nombre: 'Falda' }
-  ]);
+const Categorias = () => {   //llama a componente
+    const [categorias, setCategorias] = useState([]);
+    const [formState, setFormState] = useState({ nombre: '' });
+    const [editId, setEditId] = useState(null);
+    const [errors, setErrors] = useState({});
 
-  const [newCategoria, setNewCategoria] = useState('');
-  const [editCategoriaId, setEditCategoriaId] = useState(null);
-  const [editCategoriaNombre, setEditCategoriaNombre] = useState('');
+    useEffect(() => {
+        fetchCategorias();//mostrar todas las categorias        
+    }, []);
 
-  const handleAddCategoria = () => {
-    if (newCategoria.trim()) {
-      setCategorias([...categorias, { id: categorias.length + 1, nombre: newCategoria }]);
-      setNewCategoria('');
-    }
-  };
+    const fetchCategorias = async () => {  //listar
+        const response = await axios.get('/categories')
+        setCategorias(response.data);///que debemos cambiar aca
+    };
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formState.nombre) newErrors.nombre = 'Nombre es requerido';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-  const handleEditCategoria = (id) => {
-    const categoriaToEdit = categorias.find((categoria) => categoria.id === id);
-    setEditCategoriaId(id);
-    setEditCategoriaNombre(categoriaToEdit.nombre);
-  };
+    const handleInputChange = (e) => {  //maneja cambios en los inputs,  e -> evento que sse dispara cuando alguien interactua con el componente (como escribir en un input)
+        const { id, value } = e.target;  //desestructurar, elemento html que provoco el alimento, id atributo que cambia
+        setFormState({ ...formState, [id]: value }); //se actualiza el formState conservando sus demas campos intactos, menos el id que sera el value del input
+    };
 
-  const handleSaveEdit = () => {
-    setCategorias(categorias.map((categoria) => 
-      (categoria.id === editCategoriaId ? { ...categoria, nombre: editCategoriaNombre } : categoria)
-    ));
-    setEditCategoriaId(null);
-    setEditCategoriaNombre('');
-  };
+    const resetForm = () => {
+        setFormState({
+            nombre: ''
+        });
+        setErrors({});
+        setEditId(null); // la func pasa a otro valor cuando evento onclick
+    };
 
-  const handleDeleteCategoria = (id) => {
-    setCategorias(categorias.filter((categoria) => categoria.id !== id));
-  };
+    const createOrUpdateCategorias = async () => {
+        if (validateForm()) {
+            if (editId) {
+                await axios.put(`/categories/${editId}`, formState); //edita/actualiza el valor
+            } else {
+                await axios.post('/categories', formState); //crea el valor
+            }
+            fetchCategorias(); //lista roles
+            resetForm(); // resetea el form
+        }
+    };
 
-  return (
-    <div className="bg-pink-50 min-h-screen p-8 font-sans">
-      <h2 className="text-3xl font-bold text-center text-pink-600 mb-6">Gestión de Categorías</h2>
-      
-      <div className="mb-4 flex justify-center items-center">
-        <input
-          type="text"
-          value={newCategoria}
-          onChange={(e) => setNewCategoria(e.target.value)}
-          placeholder="Nueva Categoría"
-          className="p-2 rounded-l-lg border border-pink-400 focus:outline-none focus:border-pink-600"
-        />
-        <button
-          onClick={handleAddCategoria}
-          className="bg-pink-500 text-white px-4 py-2 rounded-r-lg hover:bg-pink-600 transition duration-300"
-        >
-          Agregar Categoría
-        </button>
-      </div>
+    const deleteCategorias = async (id) => {
+        await axios.delete(`/categories/${id}`);
+        fetchCategorias();
+    };
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-pink-200 shadow-lg rounded-lg">
-          <thead>
-            <tr className="bg-pink-100">
-              <th className="py-3 px-4 text-left text-pink-600 font-semibold">ID</th>
-              <th className="py-3 px-4 text-left text-pink-600 font-semibold">Nombre</th>
-              <th className="py-3 px-4 text-left text-pink-600 font-semibold">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categorias.map((categoria) => (
-              <tr key={categoria.id} className="border-t">
-                <td className="py-3 px-4">{categoria.id}</td>
-                <td className="py-3 px-4">
-                  {editCategoriaId === categoria.id ? (
-                    <input
-                      type="text"
-                      value={editCategoriaNombre}
-                      onChange={(e) => setEditCategoriaNombre(e.target.value)}
-                      className="p-2 border rounded-lg border-pink-400 focus:outline-none focus:border-pink-600"
-                    />
-                  ) : (
-                    categoria.nombre
-                  )}
-                </td>
-                <td className="py-3 px-4">
-                  {editCategoriaId === categoria.id ? (
-                    <button
-                      onClick={handleSaveEdit}
-                      className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition duration-300 mr-2"
-                    >
-                      Guardar
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleEditCategoria(categoria.id)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition duration-300 mr-2"
-                    >
-                      Editar
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDeleteCategoria(categoria.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+    return (
+        <div>
+            <nav id='nav-pages'>
+                <ul>
+                    <li><Link to="/">Trazabilidad</Link></li>
+                    <li><Link to="/roles">Roles</Link></li>
+                    <li><Link to="/productos">Productos</Link></li>
+                    <li><Link to="/categorias">Categorias</Link></li>
+                    <li><Link to="/lotes">Lotes</Link></li>
+                    <li><Link to="/inventario">Inventario</Link></li>
+                    <li><Link to="/controlCalidad">Control de Calidad</Link></li>
+                </ul>
+            </nav>
+            <h2>Categorias: </h2>
+            <div>
+                <label>Nombre Categoria:</label>
+                <input type="text"
+                    id="nombre"
+                    placeholder='Ingresar el nombre de la categorias'
+                    value={formState.nombre}
+                    onChange={handleInputChange}
+                />
+                {errors.nombre && <p style={{ color: 'red' }} >{errors.nombre}</p>}
+                <button onClick={createOrUpdateCategorias}>{editId ? 'Actualizar Categoria' : 'Crear Categoria'}</button>
+            </div>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {categorias.map((categoria) => (
+                        <tr key={categoria.id}>
 
-export default CategoriasCrud;
+                            <td>{categoria.nombre}</td>
+
+                            <td> <button onClick={() => {
+                                setEditId(categoria.id);
+                                setFormState({ nombre: categoria.nombre });
+                            }}>Editar</button>
+                                <button onClick={() => deleteCategorias(categoria.id)}>Eliminar</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
+
+}
+
+export default Categorias;

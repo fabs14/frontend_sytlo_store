@@ -2,23 +2,23 @@ import React, { useState, useEffect } from 'react';
 import axios from './api';
 import { Link } from 'react-router-dom';
 
-const Permisos = () => {   //llama a componente
-    const [permisos, setPermisos] = useState([]);
-    const [formState, setFormState] = useState({ nombre: '' });
+const Delivery = () => {   //llama a componente
+    const [delivery, setDelivery] = useState([]);
+    const [formState, setFormState] = useState({ nombreEmpleado: '' });
     const [editId, setEditId] = useState(null);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        fetchPermisos();//mostrar todas las categorias        
+        fetchDelivery();//mostrar todas las categorias        
     }, []);
 
-    const fetchPermisos = async () => {  //listar
-        const response = await axios.get('/Permisos')
-        setPermisos(response.data);///que debemos cambiar aca
+    const fetchDelivery = async () => {  //listar
+        const response = await axios.get('/delivery')
+        setDelivery(response.data);///que debemos cambiar aca
     };
     const validateForm = () => {
         const newErrors = {};
-        if (!formState.nombre) newErrors.nombre = 'Nombre es requerido';
+        if (!formState.nombreEmpleado) newErrors.nombreEmpleado = 'Nombre es requerido';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -30,27 +30,27 @@ const Permisos = () => {   //llama a componente
 
     const resetForm = () => {
         setFormState({
-            nombre: ''
+            nombreEmpleado: ''
         });
         setErrors({});
         setEditId(null); // la func pasa a otro valor cuando evento onclick
     };
 
-    const createOrUpdatePermisos = async () => {
+    const createOrUpdateDelivery = async () => {
         if (validateForm()) {
             if (editId) {
-                await axios.put(`/Permisos/${editId}`, formState); //edita/actualiza el valor
+                await axios.put(`/delivery/${editId}`, formState); //edita/actualiza el valor
             } else {
-                await axios.post('/Permisos', formState); //crea el valor
+                await axios.post('/delivery', formState); //crea el valor
             }
-            fetchPermisos(); //lista roles
+            fetchDelivery(); //lista roles
             resetForm(); // resetea el form
         }
     };
 
-    const deletePermisos = async (id) => {
-        await axios.delete(`/Permisos/${id}`);
-        fetchPermisos();
+    const deleteDelivery = async (id) => {
+        await axios.delete(`/delivery/${id}`);
+        fetchDelivery();
     };
 
     return (
@@ -66,36 +66,36 @@ const Permisos = () => {   //llama a componente
                     <li><Link to="/controlCalidad">Control de Calidad</Link></li>
                 </ul>
             </nav>
-            <h2>Permisos: </h2>
+            <h2>Delivery: </h2>
             <div>
-                <label>Nombre Permiso:</label>
+                <label>Nombre Empleado:</label>
                 <input type="text"
-                    id="nombre"
-                    placeholder='Ingresar el nombre del permiso'
-                    value={formState.nombre}
+                    id="nombreEmpleado"
+                    placeholder='Ingresar el nombre del empleado'
+                    value={formState.nombreEmpleado}
                     onChange={handleInputChange}
                 />
-                {errors.nombre && <p style={{ color: 'red' }} >{errors.nombre}</p>}
-                <button onClick={createOrUpdatePermisos}>{editId ? 'Actualizar Permiso' : 'Crear Permiso'}</button>
+                {errors.nombreEmpleado && <p style={{ color: 'red' }} >{errors.nombreEmpleado}</p>}
+                <button onClick={createOrUpdateDelivery}>{editId ? 'Actualizar Delivery' : 'Registrar Delivery'}</button>
             </div>
             <table border="1">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
+                        <th>Nombre Empleado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {permisos.map((permiso) => (
-                        <tr key={permiso.id}>
+                    {delivery.map((deliveryx) => (
+                        <tr key={deliveryx.id}>
 
-                            <td>{permiso.nombre}</td>
+                            <td>{deliveryx.nombreEmpleado}</td>
 
                             <td> <button onClick={() => {
-                                setEditId(permiso.id);
-                                setFormState({ nombre: permiso.nombre });
+                                setEditId(deliveryx.id);
+                                setFormState({ nombreEmpleado: deliveryx.nombreEmpleado });
                             }}>Editar</button>
-                                <button onClick={() => deletePermisos(permiso.id)}>Eliminar</button>
+                                <button onClick={() => deleteDelivery(deliveryx.id)}>Eliminar</button>
                             </td>
                         </tr>
                     ))}
@@ -106,4 +106,4 @@ const Permisos = () => {   //llama a componente
 
 }
 
-export default Permisos;
+export default Delivery;

@@ -2,31 +2,29 @@ import React, { useState, useEffect } from 'react';
 import axios from './api';
 import { Link } from 'react-router-dom';
 
-const Productos = () => {   //llama a componente
-    const [productos, setProductos] = useState([]);
+const Sucursal = () => {   //llama a componente
+    const [sucursal, setSucursal] = useState([]);
     const [formState, setFormState] = useState({       //rellenar inputs, campos del form
-        nombre: '',
-        descripcion: '',
-        precio: ''
+        nombreSucursal: '',
+        direccionSucursal: ''
     });
     const [editId, setEditId] = useState(null);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        fetchProductos();//mostrar todos los productos    
+        fetchSucursal();//mostrar todos los Sucursal    
     }, []);
 
-    const fetchProductos = async () => {
-        const response = await axios.get('/products')
-        setProductos(response.data);
+    const fetchSucursal = async () => {
+        const response = await axios.get('/sucursal')
+        setSucursal(response.data);
     };
 
 
     const validateForm = () => {
         const newErrors = {};
-        if (!formState.nombre) newErrors.nombre = 'Nombre es requerido';
-        if (!formState.descripcion) newErrors.descripcion = 'Descripcion es requerido';
-        if (!formState.precio) newErrors.precio = 'Precio es requerido';
+        if (!formState.nombreSucursal) newErrors.nombreSucursal = 'Nombre es requerido';
+        if (!formState.direccionSucursal) newErrors.direccionSucursal = 'Direccion es requerido';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -38,29 +36,28 @@ const Productos = () => {   //llama a componente
 
     const resetForm = () => {
         setFormState({
-            nombre: '',
-            descripcion: '',
-            precio: ''
+            nombreSucursal: '',
+            direccionSucursal: ''
         });
         setErrors({});
         setEditId(null); // la func pasa a otro valor cuando evento onclick
     };
 
-    const createOrUpdateProductos = async () => {
+    const createOrUpdateSucursal = async () => {
         if (validateForm()) {
             if (editId) {
-                await axios.put(`/products/${editId}`, formState); //edita/actualiza el valor
+                await axios.put(`/sucursal/${editId}`, formState); //edita/actualiza el valor
             } else {
-                await axios.post('/products', formState); //crea el valor
+                await axios.post('/sucursal', formState); //crea el valor
             }
-            fetchProductos(); //lista roles
+            fetchSucursal(); //lista roles
             resetForm(); // resetea el form
         }
     };
 
-    const deleteProductos = async (id) => {
-        await axios.delete(`/products/${id}`);
-        fetchProductos();
+    const deleteSucursal = async (id) => {
+        await axios.delete(`/sucursal/${id}`);
+        fetchSucursal();
     };
 
     return (
@@ -77,66 +74,53 @@ const Productos = () => {   //llama a componente
                     <li><Link to="/controlCalidad">Control de Calidad</Link></li>
                 </ul>
             </nav>
-            <h2>Gestion de Productos:</h2>
+            <h2>Gestion de Sucursales:</h2>
             <div>
                 <label>Nombre:</label>
                 <input
                     type="text"
-                    id="nombre"
-                    value={formState.nombre}
+                    id="nombreSucursal"
+                    value={formState.nombreSucursal}
                     onChange={handleInputChange}
                 />
-                {errors.nombre && <span>{errors.nombre}</span>}
+                {errors.nombreSucursal && <span>{errors.nombreSucursal}</span>}
             </div>
             <div>
-                <label>Descripcion:</label>
+                <label>Direccion:</label>
                 <input type="text"
-                    id="descripcion"
-                    placeholder='Ingresar la descripcion del producto'
-                    value={formState.descripcion}
+                    id="direccionSucursal"
+                    placeholder='Ingresar la direccion de la Sucursal'
+                    value={formState.direccionSucursal}
                     onChange={handleInputChange}
                 />
-                {errors.descripcion && <p style={{ color: 'red' }} >{errors.descripcion}</p>}
-            </div>
-            <div>
-                <label>Precio:</label>
-                <input type="text"
-                    id="precio"
-                    placeholder='Ingresar el precio del producto'
-                    value={formState.precio}
-                    onChange={handleInputChange}
-                />
-                {errors.precio && <p style={{ color: 'red' }} >{errors.precio}</p>}
+                {errors.direccionSucursal && <p style={{ color: 'red' }} >{errors.direccionSucursal}</p>}
             </div>
 
-            <button onClick={createOrUpdateProductos}>{editId ? 'Actualizar Producto' : 'Crear Producto'}</button>
+            <button onClick={createOrUpdateSucursal}>{editId ? 'Actualizar Sucursal' : 'Crear Sucursal'}</button>
 
             <table border="1">
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Descripcion</th>
-                        <th>Precio</th>
+                        <th>Direccion</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {productos.map((producto) => (
-                        <tr key={producto.id}>
+                    {sucursal.map((sucursales) => (
+                        <tr key={sucursales.id}>
 
-                            <td>{producto.nombre}</td>
-                            <td>{producto.descripcion}</td>
-                            <td>{producto.precio}</td>
+                            <td>{sucursales.nombreSucursal}</td>
+                            <td>{sucursales.direccionSucursal}</td>
 
                             <td> <button onClick={() => {
-                                setEditId(producto.id);
+                                setEditId(sucursales.id);
                                 setFormState({
-                                    nombre: producto.nombre,
-                                    descripcion: producto.descripcion,
-                                    precio: producto.precio
+                                    nombre: sucursales.nombreSucursal,
+                                    descripcion: sucursales.direccionSucursal
                                 });
                             }}>Editar</button>
-                                <button onClick={() => deleteProductos(producto.id)}>Eliminar</button>
+                                <button onClick={() => deleteSucursal(sucursales.id)}>Eliminar</button>
                             </td>
                         </tr>
                     ))}
@@ -146,4 +130,4 @@ const Productos = () => {   //llama a componente
     )
 }
 
-export default Productos;  // exportar
+export default Sucursal;  // exportar

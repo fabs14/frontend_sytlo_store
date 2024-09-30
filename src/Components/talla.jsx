@@ -2,23 +2,29 @@ import React, { useState, useEffect } from 'react';
 import axios from './api';
 import { Link } from 'react-router-dom';
 
-const Permisos = () => {   //llama a componente
-    const [permisos, setPermisos] = useState([]);
-    const [formState, setFormState] = useState({ nombre: '' });
+const Talla = () => {   //llama a componente
+    const [talla, setTalla] = useState([]);
+    const [formState, setFormState] = useState({       //rellenar inputs, campos del form
+        nombre: '',
+        descripcion: ''
+    });
     const [editId, setEditId] = useState(null);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        fetchPermisos();//mostrar todas las categorias        
+        fetchTalla();//mostrar todos los Talla    
     }, []);
 
-    const fetchPermisos = async () => {  //listar
-        const response = await axios.get('/Permisos')
-        setPermisos(response.data);///que debemos cambiar aca
+    const fetchTalla = async () => {
+        const response = await axios.get('/talla')
+        setTalla(response.data);
     };
+
+
     const validateForm = () => {
         const newErrors = {};
         if (!formState.nombre) newErrors.nombre = 'Nombre es requerido';
+        if (!formState.descripcion) newErrors.descripcion = 'Descripcion es requerido';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -30,30 +36,32 @@ const Permisos = () => {   //llama a componente
 
     const resetForm = () => {
         setFormState({
-            nombre: ''
+            nombre: '',
+            descripcion: ''
         });
         setErrors({});
         setEditId(null); // la func pasa a otro valor cuando evento onclick
     };
 
-    const createOrUpdatePermisos = async () => {
+    const createOrUpdateTalla = async () => {
         if (validateForm()) {
             if (editId) {
-                await axios.put(`/Permisos/${editId}`, formState); //edita/actualiza el valor
+                await axios.put(`/talla/${editId}`, formState); //edita/actualiza el valor
             } else {
-                await axios.post('/Permisos', formState); //crea el valor
+                await axios.post('/talla', formState); //crea el valor
             }
-            fetchPermisos(); //lista roles
+            fetchTalla(); //lista talla
             resetForm(); // resetea el form
         }
     };
 
-    const deletePermisos = async (id) => {
-        await axios.delete(`/Permisos/${id}`);
-        fetchPermisos();
+    const deleteTalla = async (id) => {
+        await axios.delete(`/talla/${id}`);
+        fetchTalla();
     };
 
     return (
+
         <div>
             <nav id='nav-pages'>
                 <ul>
@@ -66,36 +74,53 @@ const Permisos = () => {   //llama a componente
                     <li><Link to="/controlCalidad">Control de Calidad</Link></li>
                 </ul>
             </nav>
-            <h2>Permisos: </h2>
+            <h2>Gestion de Tallas:</h2>
             <div>
-                <label>Nombre Permiso:</label>
-                <input type="text"
+                <label>Nombre:</label>
+                <input
+                    type="text"
                     id="nombre"
-                    placeholder='Ingresar el nombre del permiso'
                     value={formState.nombre}
                     onChange={handleInputChange}
                 />
-                {errors.nombre && <p style={{ color: 'red' }} >{errors.nombre}</p>}
-                <button onClick={createOrUpdatePermisos}>{editId ? 'Actualizar Permiso' : 'Crear Permiso'}</button>
+                {errors.nombre && <span>{errors.nombre}</span>}
             </div>
+            <div>
+                <label>Descripcion:</label>
+                <input type="text"
+                    id="descripcion"
+                    placeholder='Ingresar la descripcion de la talla'
+                    value={formState.descripcion}
+                    onChange={handleInputChange}
+                />
+                {errors.descripcion && <p style={{ color: 'red' }} >{errors.descripcion}</p>}
+            </div>
+
+            <button onClick={createOrUpdateTalla}>{editId ? 'Actualizar talla' : 'Crear talla'}</button>
+
             <table border="1">
                 <thead>
                     <tr>
                         <th>Nombre</th>
+                        <th>Descripcion</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {permisos.map((permiso) => (
-                        <tr key={permiso.id}>
+                    {talla.map((tallax) => (
+                        <tr key={tallax.id}>
 
-                            <td>{permiso.nombre}</td>
+                            <td>{tallax.nombre}</td>
+                            <td>{tallax.descripcion}</td>
 
                             <td> <button onClick={() => {
-                                setEditId(permiso.id);
-                                setFormState({ nombre: permiso.nombre });
+                                setEditId(tallax.id);
+                                setFormState({
+                                    nombre: tallax.nombre,
+                                    descripcion: tallax.descripcion
+                                });
                             }}>Editar</button>
-                                <button onClick={() => deletePermisos(permiso.id)}>Eliminar</button>
+                                <button onClick={() => deleteTalla(tallax.id)}>Eliminar</button>
                             </td>
                         </tr>
                     ))}
@@ -103,7 +128,6 @@ const Permisos = () => {   //llama a componente
             </table>
         </div>
     )
-
 }
 
-export default Permisos;
+export default Talla;  // exportar
