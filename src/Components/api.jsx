@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Crear la instancia de axios
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // Asegúrate de tener la URL correcta
+  baseURL: 'http://https://backend-production-ad5c.up.railway.app/api', // Asegúrate de tener la URL correcta
 });
 
 // Interceptor para agregar el token JWT a las cabeceras de cada solicitud
