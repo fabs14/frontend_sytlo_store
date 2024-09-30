@@ -1,90 +1,103 @@
 import React, { useState } from 'react';
-
-const usuariosRegistrados = [
-  { id: 1, nombre: 'Jorge', apellido: 'Perez', email: 'jorge@gmail.com', rol: 'Administrador', password: '12345' },
-  { id: 2, nombre: 'Maria', apellido: 'Lopez', email: 'maria@gmail.com', rol: 'Cliente', password: 'abcde' },
-  { id: 3, nombre: 'Carlos', apellido: 'Gomez', email: 'carlos@gmail.com', rol: 'Delivery', password: 'xyz123' }
-];
+import axios from 'axios';
+import { useAuth } from '../AuthContext'; // Importamos el contexto
+import { useNavigate } from 'react-router-dom'; // Importamos useNavigate
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [contraseña, setContraseña] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth(); // Usamos la función de login del contexto
+  const navigate = useNavigate(); // Inicializamos el hook de navegación
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const usuario = usuariosRegistrados.find(
-      (user) => user.email === email && user.password === password
-    );
+    setLoading(true);
+    setError('');
 
-    if (usuario) {
-      setIsLoggedIn(true);
-      setCurrentUser(usuario);
-      setError('');
-    } else {
-      setError('Email o password incorrectos');
+    try {
+      const response = await axios.post(`http://localhost:8080/api/usuarios/login`, {
+        email,
+        contraseña,
+      });
+
+      const token = response.data;
+
+      if (token) {
+        login(token); // Guardar el token en el contexto y localStorage
+        console.log('Login exitoso, token guardado:', token);
+        setError('');
+        navigate('/usuarios'); // Redirigir a la página de usuarios
+      } else {
+        throw new Error('No se recibió el token del servidor');
+      }
+    } catch (err) {
+      if (err.response) {
+        console.error('Error del servidor:', err.response.data);
+        setError(err.response.data || 'Credenciales incorrectas');
+      } else if (err.request) {
+        console.error('Error de red:', err.request);
+        setError('Error de red. Por favor, intenta de nuevo.');
+      } else {
+        console.error('Error:', err.message);
+        setError('Error en la solicitud');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setCurrentUser(null);
-    setEmail('');
-    setPassword('');
-  };
-
   return (
-    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div className="flex items-center justify-center min-h-screen bg-pink-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        {isLoggedIn ? (
-          <div>
-            <h2 className="text-2xl font-bold text-center mb-4">
-              Bienvenido, {currentUser.nombre} {currentUser.apellido}!
-            </h2>
-            <p className="text-center mb-6">Rol: {currentUser.rol}</p>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white w-full py-2 rounded-lg hover:bg-red-600 transition duration-300"
-            >
-              Cerrar Sesión
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleLogin}>
-            <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">Email:</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Ingrese su email"
-                required
-                className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block mb-2 font-semibold">Password:</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ingrese su password"
-                required
-                className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white w-full py-2 rounded-lg hover:bg-blue-600 transition duration-300"
-            >
-              Iniciar Sesión
-            </button>
-          </form>
+        <h2 className="text-3xl font-bold text-center text-pink-600 mb-6">Iniciar Sesión</h2>
+
+        {error && (
+          <p className="text-red-500 text-center mb-4 font-semibold">
+            {error}
+          </p>
         )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-pink-600 font-semibold mb-1">Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Ingresa tu email"
+              required
+              disabled={loading}
+              className="w-full px-4 py-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-pink-600 font-semibold mb-1">Contraseña:</label>
+            <input
+              type="password"
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+              placeholder="Ingresa tu contraseña"
+              required
+              disabled={loading}
+              className="w-full px-4 py-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 text-white font-semibold rounded-lg shadow-md transition duration-300 ${
+              loading
+                ? 'bg-pink-300 cursor-not-allowed'
+                : 'bg-pink-500 hover:bg-pink-600'
+            }`}
+          >
+            {loading ? 'Cargando...' : 'Iniciar Sesión'}
+          </button>
+        </form>
       </div>
     </div>
   );

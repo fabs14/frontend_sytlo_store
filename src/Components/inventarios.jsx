@@ -1,53 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import axios from './api';
-import { Link } from 'react-router-dom';
 
-const Inventario = () => {   //llama a componente
-    const [invetario, setInventario] = useState([]);
-    const [productos, setProductos] = useState([]);  // obtener info de productos
-    const [talla, setTalla] = useState([]);  // obtener info de Tallas
-    const [formState, setFormState] =
-        useState({
-            producto_id: '',
-            talla_id: '',
-            cantidad: '',
-            fechaActualizacion: ''
-        });
+const Inventario = () => {
+    const [inventario, setInventario] = useState([]);
+    const [productos, setProductos] = useState([]);
+    const [tallas, setTallas] = useState([]);
+    const [formState, setFormState] = useState({
+        producto_id: '',
+        talla_id: '',
+        cantidad: '',
+        fechaActualizacion: ''
+    });
     const [editId, setEditId] = useState(null);
-    const [errors, setErrors] = useState({});
+    const [ setErrors] = useState({});
 
     useEffect(() => {
-        fetchInventario();//mostrar todas las categorias  
-        fetchProductos(); //mostrar todas los productos 
+        fetchInventario();
+        fetchProductos();
         fetchTallas();
     }, []);
 
-    const fetchInventario = async () => {  //listar
-        const response = await axios.get('/productotallainventario')
-        setInventario(response.data);///que debemos cambiar aca
+    const fetchInventario = async () => {
+        try {
+            const response = await axios.get('/productotallainventario');
+            setInventario(response.data);
+            console.log('Inventario:', response.data);
+        } catch (error) {
+            console.error('Error al obtener inventario:', error);
+        }
     };
+
     const fetchProductos = async () => {
-        const response = await axios.get('/products')
-        setProductos(response.data);
+        try {
+            const response = await axios.get('/productos');
+            setProductos(response.data);
+        } catch (error) {
+            console.error('Error al obtener productos:', error);
+        }
     };
+
     const fetchTallas = async () => {
-        const response = await axios.get('/talla')
-        setTalla(response.data);
+        try {
+            const response = await axios.get('/tallas');
+            setTallas(response.data);
+        } catch (error) {
+            console.error('Error al obtener tallas:', error);
+        }
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formState.producto_id) newErrors.producto_id = 'producto id es requerido';
-        if (!formState.talla_id) newErrors.talla_id = 'Talla id es requerido';
-        if (!formState.cantidad_disponible) newErrors.cantidad_disponible = 'cantidad disponible es requerido';
-        if (!formState.fechaActualizacion) newErrors.fechaActualizacion = 'fecha es requerido';
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleInputChange = (e) => {  //maneja cambios en los inputs,  e -> evento que sse dispara cuando alguien interactua con el componente (como escribir en un input)
-        const { id, value } = e.target;  //desestructurar, elemento html que provoco el alimento, id atributo que cambia
-        setFormState({ ...formState, [id]: value }); //se actualiza el formState conservando sus demas campos intactos, menos el id que sera el value del input
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setFormState({ ...formState, [id]: value });
     };
 
     const resetForm = () => {
@@ -58,135 +61,165 @@ const Inventario = () => {   //llama a componente
             fechaActualizacion: ''
         });
         setErrors({});
-        setEditId(null); // la func pasa a otro valor cuando evento onclick
+        setEditId(null);
     };
 
     const createOrUpdateInventario = async () => {
-        if (validateForm()) {
+        try {
             if (editId) {
-                await axios.put(`/productotallainventario/${editId}`, formState); //edita/actualiza el valor
+                await axios.put(`/productotallainventario/${editId}`, formState);
             } else {
-                await axios.post('/productotallainventario', formState); //crea el valor
+                await axios.post('/productotallainventario', formState);
             }
-            fetchInventario(); //lista roles
-            resetForm(); // resetea el form
+            fetchInventario();
+            resetForm();
+        } catch (error) {
+            console.error('Error al guardar el inventario:', error);
         }
     };
 
     const deleteInventario = async (id) => {
-        await axios.delete(`/productotallainventario/${id}`);
-        fetchInventario();
+        try {
+            await axios.delete(`/productotallainventario/${id}`);
+            fetchInventario();
+        } catch (error) {
+            console.error('Error al eliminar inventario:', error);
+        }
     };
 
     return (
+        <div className="min-h-screen bg-pink-50 p-8">
+            <h2 className="text-3xl font-bold text-pink-600 mb-6 text-center">Gestión de Inventario</h2>
 
-        <div>
-            <nav id='nav-pages'>
-                <ul>
-                    <li><Link to="/">Trazabilidad</Link></li>
-                    <li><Link to="/roles">Roles</Link></li>
-                    <li><Link to="/productos">Productos</Link></li>
-                    <li><Link to="/categorias">Categorias</Link></li>
-                    <li><Link to="/lotes">Lotes</Link></li>
-                    <li><Link to="/inventario">Inventario</Link></li>
-                    <li><Link to="/controlCalidad">Control de Calidad</Link></li>
-                </ul>
-            </nav>
-            <h2>Gestion de Inventario:</h2>
-            <div>
-                <label>Producto:</label>
-                <select
-                    id="producto_id"
-                    value={formState.producto_id}
-                    onChange={handleInputChange}
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+                <h3 className="text-xl font-semibold text-pink-600 mb-4">
+                    {editId ? 'Editar Inventario' : 'Crear Nuevo Inventario'}
+                </h3>
+
+                {/* Formulario para agregar o editar inventario */}
+                <div className="mb-4">
+                    <label className="block text-pink-600 font-medium mb-2">Producto:</label>
+                    <select
+                        id="producto_id"
+                        value={formState.producto_id}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+                    >
+                        <option value="">Seleccionar Producto</option>
+                        {productos.map((producto) => (
+                            <option key={producto.id} value={producto.id}>
+                                {producto.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="mb-4">
+                    <label className="block text-pink-600 font-medium mb-2">Talla:</label>
+                    <select
+                        id="talla_id"
+                        value={formState.talla_id}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+                    >
+                        <option value="">Seleccionar Talla</option>
+                        {tallas.map((talla) => (
+                            <option key={talla.id} value={talla.id}>
+                                {talla.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="mb-4">
+                    <label className="block text-pink-600 font-medium mb-2">Cantidad:</label>
+                    <input
+                        type="number"
+                        id="cantidad"
+                        value={formState.cantidad}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+                        placeholder="Ingrese la cantidad"
+                    />
+                </div>
+
+                <div className="mb-4">
+                    <label className="block text-pink-600 font-medium mb-2">Fecha:</label>
+                    <input
+                        type="date"
+                        id="fechaActualizacion"
+                        value={formState.fechaActualizacion}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+                    />
+                </div>
+
+                <button
+                    onClick={createOrUpdateInventario}
+                    className="w-full bg-pink-500 text-white py-2 rounded-lg shadow-md hover:bg-pink-600 transition duration-300"
                 >
-                    <option value="">Seleccionar Producto</option>
-                    {productos.map((producto) => (
-                        <option key={producto.id} value={producto.id}>
-                            {producto.nombre}
-                        </option>
-                    ))}
-                </select>
-                {errors.producto_id && <p style={{ color: 'red' }} >{errors.producto_id}</p>}
-            </div>
-            <div>
-                <label>Talla:</label>
-                <select
-                    id="talla_id"
-                    value={formState.talla_id}
-                    onChange={handleInputChange}
-                >
-                    <option value="">Seleccionar Talla</option>
-                    {talla.map((tallas) => (
-                        <option key={tallas.id} value={tallas.id}>
-                            {tallas.nombre}
-                        </option>
-                    ))}
-                </select>
-                {errors.talla_id && <p style={{ color: 'red' }} >{errors.talla_id}</p>}
-            </div>
-            <div>
-                <label>Cantidad:</label>
-                <input type="text"
-                    id="cantidad"
-                    placeholder='Ingresar cantidad'
-                    value={formState.cantidad}
-                    onChange={handleInputChange}
-                />
-                {errors.cantidad && <p style={{ color: 'red' }} >{errors.cantidad}</p>}
-            </div>
-            <button onClick={createOrUpdateInventario}>{editId ? 'Actualizar Inventario' : 'Crear Inventario'}</button>
-            <div>
-                <label>Fecha:</label>
-                <input type="date"
-                    id="fechaActualizacion"
-                    value={formState.fechaActualizacion}
-                    onChange={handleInputChange}
-                />
-                {errors.fechaActualizacion && <p style={{ color: 'red' }} >{errors.fechaActualizacion}</p>}
+                    {editId ? 'Actualizar Inventario' : 'Crear Inventario'}
+                </button>
             </div>
 
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Talla</th>
-                        <th>Cantidad</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {invetario.map((inventariox) => (
-                        <tr key={inventariox.id}>
-
-                            <td>{inventariox.producto_id}</td>
-                            <td>{inventariox.talla_id}</td>
-                            <td>{inventariox.cantidad}</td>
-                            <td>{inventariox.fechaActualizacion}</td>
-
-                            <td> <button onClick={() => {
-                                setEditId(inventariox.id);
-                                setFormState({
-                                    producto_id: inventariox.producto_id,
-                                    talla_id: inventariox.talla_id,
-                                    cantidad: inventariox.cantidad,
-                                    fechaActualizacion: inventariox.fechaActualizacion
-                                });
-                            }}>Editar</button>
-                                <button onClick={() => deleteInventario(inventariox.id)}>Eliminar</button>
-                            </td>
+            {/* Tabla de inventario */}
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-pink-600 mb-4">Lista de Inventario</h3>
+                <table className="min-w-full bg-white border border-pink-200 rounded-lg overflow-hidden">
+                    <thead className="bg-pink-100 text-pink-700">
+                        <tr>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">ID Producto</th>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">ID Talla</th>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Producto</th>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Talla</th>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Cantidad</th>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
+                            <th className="py-3 px-6 text-right text-xs font-medium uppercase tracking-wider">Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-
-
-
+                    </thead>
+                    <tbody className="divide-y divide-pink-200">
+                        {inventario.map((item) => {
+                            const producto = productos.find(p => p.id === item.productoId);
+                            const talla = tallas.find(t => t.id === item.tallaId);
+                            
+                            return (
+                                <tr key={item.id}>
+                                    <td className="py-4 px-6 text-pink-900">{item.productoId}</td>
+                                    <td className="py-4 px-6 text-pink-900">{item.tallaId}</td>
+                                    <td className="py-4 px-6 text-pink-900">{producto ? producto.nombre : 'No encontrado'}</td>
+                                    <td className="py-4 px-6 text-pink-900">{talla ? talla.nombre : 'No encontrado'}</td>
+                                    <td className="py-4 px-6 text-pink-900">{item.cantidad}</td>
+                                    <td className="py-4 px-6 text-pink-900">{new Date(item.fechaActualizacion).toLocaleDateString()}</td>
+                                    <td className="py-4 px-6 text-right">
+                                        <button
+                                            onClick={() => {
+                                                setEditId(item.id);
+                                                setFormState({
+                                                    producto_id: item.productoId,
+                                                    talla_id: item.tallaId,
+                                                    cantidad: item.cantidad,
+                                                    fechaActualizacion: item.fechaActualizacion
+                                                });
+                                            }}
+                                            className="bg-yellow-500 text-white px-4 py-1 rounded-lg hover:bg-yellow-600 transition ml-2"
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            onClick={() => deleteInventario(item.id)}
+                                            className="bg-red-500 text-white px-4 py-1 rounded-lg hover:bg-red-600 transition ml-2"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-
-    )
-
-}
+    );
+};
 
 export default Inventario;
