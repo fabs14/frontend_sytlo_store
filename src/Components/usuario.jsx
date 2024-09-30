@@ -1,19 +1,14 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
+import api from './api';  // Importamos la instancia de axios con el interceptor configurado
+import axios from 'axios';
 const UsuariosCrud = () => {
-  const roles = ['Administrador', 'Cliente', 'Delivery'];
-
-  const [usuarios, setUsuarios] = useState([
-    { id: 1, nombre: 'Jorge', apellido: 'Perez', email: 'jorge@example.com', rol: 'Administrador', password: '12345' },
-    { id: 2, nombre: 'Maria', apellido: 'Lopez', email: 'maria@example.com', rol: 'Cliente', password: 'abcde' },
-    { id: 3, nombre: 'Carlos', apellido: 'Gomez', email: 'carlos@example.com', rol: 'Delivery', password: 'xyz123' }
-  ]);
-
+  const [usuarios, setUsuarios] = useState([]);
+  const [roles, setRoles] = useState([]); // Estado para los roles
   const [newUsuario, setNewUsuario] = useState({
     nombre: '',
     apellido: '',
     email: '',
-    rol: roles[0],
+    rol: '',
     password: ''
   });
   const [editUsuarioId, setEditUsuarioId] = useState(null);
@@ -25,43 +20,85 @@ const UsuariosCrud = () => {
     password: ''
   });
 
-  const handleAddUsuario = () => {
-    if (newUsuario.nombre.trim() && newUsuario.email.trim() && newUsuario.password.trim()) {
-      setUsuarios([...usuarios, { id: usuarios.length + 1, ...newUsuario }]);
-      setNewUsuario({
-        nombre: '',
-        apellido: '',
-        email: '',
-        rol: roles[0],
-        password: ''
-      });
+  // Fetch de usuarios y roles al cargar el componente
+  useEffect(() => {
+    fetchUsuarios();
+    fetchRoles();  // Llamada para obtener roles
+  }, []);
+
+  // Obtener todos los usuarios (GET)
+  const fetchUsuarios = async () => {
+    try {
+      const response = await api.get('/usuarios');
+      setUsuarios(response.data);  // Asignar los usuarios al estado
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
     }
   };
 
+  // Obtener roles desde el backend (GET)
+  const fetchRoles = async () => {
+    try {
+      const response = await api.get('/roles');  // Asume que /roles devuelve un array de roles
+      setRoles(response.data);  // Guardar los roles en el estado
+    } catch (error) {
+      console.error('Error al obtener roles:', error);
+    }
+  };
+
+  // Agregar nuevo usuario (POST)
+  const handleAddUsuario = async () => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/usuarios/registrar', {
+            nombre: newUsuario.nombre,
+            apellido: newUsuario.apellido,
+            email: newUsuario.email,
+            password: newUsuario.password,
+            rol: newUsuario.rol
+        });
+        console.log('Usuario agregado:', response.data);
+    } catch (error) {
+        console.error('Error al agregar usuario:', error);
+    }
+};
+
+
+  // Editar un usuario (PUT)
   const handleEditUsuario = (id) => {
     const usuarioToEdit = usuarios.find((usuario) => usuario.id === id);
     setEditUsuarioId(id);
     setEditUsuario(usuarioToEdit);
   };
 
-  const handleSaveEdit = () => {
-    setUsuarios(
-      usuarios.map((usuario) =>
-        usuario.id === editUsuarioId ? { ...usuario, ...editUsuario } : usuario
-      )
-    );
-    setEditUsuarioId(null);
-    setEditUsuario({
-      nombre: '',
-      apellido: '',
-      email: '',
-      rol: '',
-      password: ''
-    });
+  const handleSaveEdit = async () => {
+    try {
+      const response = await api.put(`/usuarios/${editUsuarioId}`, editUsuario);
+      setUsuarios(
+        usuarios.map((usuario) =>
+          usuario.id === editUsuarioId ? response.data : usuario
+        )
+      );
+      setEditUsuarioId(null);
+      setEditUsuario({
+        nombre: '',
+        apellido: '',
+        email: '',
+        rol: '',
+        password: ''
+      });
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+    }
   };
 
-  const handleDeleteUsuario = (id) => {
-    setUsuarios(usuarios.filter((usuario) => usuario.id !== id));
+  // Eliminar usuario (DELETE)
+  const handleDeleteUsuario = async (id) => {
+    try {
+      await api.delete(`/usuarios/${id}`);
+      setUsuarios(usuarios.filter((usuario) => usuario.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+    }
   };
 
   return (
@@ -106,8 +143,8 @@ const UsuariosCrud = () => {
             className="p-3 rounded-lg border border-pink-300 focus:outline-none focus:ring-pink-400 focus:border-pink-500"
           >
             {roles.map((rol) => (
-              <option key={rol} value={rol}>
-                {rol}
+              <option key={rol.id} value={rol.id}>
+                {rol.nombre} {/* Asumiendo que los roles tienen un campo "nombre" */}
               </option>
             ))}
           </select>
@@ -144,7 +181,7 @@ const UsuariosCrud = () => {
                       className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     />
                   ) : (
-                    usuario.nombre
+                    usuario.nombres
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-pink-900">
@@ -156,7 +193,7 @@ const UsuariosCrud = () => {
                       className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     />
                   ) : (
-                    usuario.apellido
+                    usuario.apellidos
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-pink-900">
@@ -179,13 +216,13 @@ const UsuariosCrud = () => {
                       className="p-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-pink-400 focus:border-pink-500"
                     >
                       {roles.map((rol) => (
-                        <option key={rol} value={rol}>
-                          {rol}
+                        <option key={rol.id} value={rol.id}>
+                          {rol.nombre}
                         </option>
                       ))}
                     </select>
                   ) : (
-                    usuario.rol
+                    usuario.rol_id
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

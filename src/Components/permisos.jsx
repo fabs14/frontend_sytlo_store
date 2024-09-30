@@ -1,109 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import axios from './api';
-import { Link } from 'react-router-dom';
+import axios from './api'; // Instancia de Axios configurada
 
-const Permisos = () => {   //llama a componente
+const Permisos = () => {
     const [permisos, setPermisos] = useState([]);
     const [formState, setFormState] = useState({ nombre: '' });
-    const [editId, setEditId] = useState(null);
+    const [editId, setEditId] = useState(null); // ID para editar el permiso
     const [errors, setErrors] = useState({});
 
+    // Fetch inicial para obtener todos los permisos
     useEffect(() => {
-        fetchPermisos();//mostrar todas las categorias        
+        fetchPermisos();
     }, []);
 
-    const fetchPermisos = async () => {  //listar
-        const response = await axios.get('/Permisos')
-        setPermisos(response.data);///que debemos cambiar aca
+    // Obtener todos los permisos desde el backend
+    const fetchPermisos = async () => {
+        try {
+            const response = await axios.get('/permisos'); // Endpoint corregido
+            setPermisos(response.data); // Asignar los permisos obtenidos al estado
+        } catch (error) {
+            console.error('Error al obtener los permisos:', error);
+        }
     };
+
+    // Validar el formulario antes de enviar
     const validateForm = () => {
         const newErrors = {};
-        if (!formState.nombre) newErrors.nombre = 'Nombre es requerido';
+        if (!formState.nombre) newErrors.nombre = 'El nombre es requerido';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleInputChange = (e) => {  //maneja cambios en los inputs,  e -> evento que sse dispara cuando alguien interactua con el componente (como escribir en un input)
-        const { id, value } = e.target;  //desestructurar, elemento html que provoco el alimento, id atributo que cambia
-        setFormState({ ...formState, [id]: value }); //se actualiza el formState conservando sus demas campos intactos, menos el id que sera el value del input
+    // Manejar cambios en los inputs del formulario
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setFormState({ ...formState, [id]: value });
     };
 
+    // Resetear el formulario después de crear o actualizar
     const resetForm = () => {
-        setFormState({
-            nombre: ''
-        });
+        setFormState({ nombre: '' });
         setErrors({});
-        setEditId(null); // la func pasa a otro valor cuando evento onclick
+        setEditId(null);
     };
 
+    // Crear o actualizar permisos
     const createOrUpdatePermisos = async () => {
         if (validateForm()) {
-            if (editId) {
-                await axios.put(`/Permisos/${editId}`, formState); //edita/actualiza el valor
-            } else {
-                await axios.post('/Permisos', formState); //crea el valor
+            try {
+                if (editId) {
+                    // Actualizar un permiso existente
+                    await axios.put(`/permisos/${editId}`, formState);
+                } else {
+                    // Crear un nuevo permiso
+                    await axios.post('/permisos', formState);
+                }
+                fetchPermisos(); // Refrescar la lista de permisos después de la operación
+                resetForm(); // Limpiar el formulario
+            } catch (error) {
+                console.error('Error al guardar el permiso:', error);
             }
-            fetchPermisos(); //lista roles
-            resetForm(); // resetea el form
         }
     };
 
+    // Eliminar un permiso
     const deletePermisos = async (id) => {
-        await axios.delete(`/Permisos/${id}`);
-        fetchPermisos();
+        try {
+            await axios.delete(`/permisos/${id}`);
+            fetchPermisos(); // Refrescar la lista después de eliminar
+        } catch (error) {
+            console.error('Error al eliminar el permiso:', error);
+        }
     };
 
     return (
-        <div>
-            <nav id='nav-pages'>
-                <ul>
-                    <li><Link to="/">Trazabilidad</Link></li>
-                    <li><Link to="/roles">Roles</Link></li>
-                    <li><Link to="/productos">Productos</Link></li>
-                    <li><Link to="/categorias">Categorias</Link></li>
-                    <li><Link to="/lotes">Lotes</Link></li>
-                    <li><Link to="/inventario">Inventario</Link></li>
-                    <li><Link to="/controlCalidad">Control de Calidad</Link></li>
-                </ul>
-            </nav>
-            <h2>Permisos: </h2>
-            <div>
-                <label>Nombre Permiso:</label>
-                <input type="text"
-                    id="nombre"
-                    placeholder='Ingresar el nombre del permiso'
-                    value={formState.nombre}
-                    onChange={handleInputChange}
-                />
-                {errors.nombre && <p style={{ color: 'red' }} >{errors.nombre}</p>}
-                <button onClick={createOrUpdatePermisos}>{editId ? 'Actualizar Permiso' : 'Crear Permiso'}</button>
+        <div className="min-h-screen bg-pink-50 p-8">
+            <h2 className="text-3xl font-bold text-pink-600 mb-6 text-center">Gestión de Permisos</h2>
+
+            {/* Formulario de creación y edición */}
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+                <h3 className="text-xl font-semibold text-pink-600 mb-4">
+                    {editId ? 'Editar Permiso' : 'Crear Nuevo Permiso'}
+                </h3>
+                <div className="mb-4">
+                    <label className="block text-pink-600 font-medium mb-2">Nombre del Permiso:</label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        placeholder="Ingrese el nombre del permiso"
+                        value={formState.nombre}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+                    />
+                    {errors.nombre && <p className="text-red-500 mt-2">{errors.nombre}</p>}
+                </div>
+                <button
+                    onClick={createOrUpdatePermisos}
+                    className="w-full bg-pink-500 text-white py-2 rounded-lg shadow-md hover:bg-pink-600 transition duration-300"
+                >
+                    {editId ? 'Actualizar Permiso' : 'Crear Permiso'}
+                </button>
             </div>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {permisos.map((permiso) => (
-                        <tr key={permiso.id}>
 
-                            <td>{permiso.nombre}</td>
-
-                            <td> <button onClick={() => {
-                                setEditId(permiso.id);
-                                setFormState({ nombre: permiso.nombre });
-                            }}>Editar</button>
-                                <button onClick={() => deletePermisos(permiso.id)}>Eliminar</button>
-                            </td>
+            {/* Tabla de permisos */}
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-pink-600 mb-4">Lista de Permisos</h3>
+                <table className="min-w-full bg-white border border-pink-200 rounded-lg overflow-hidden">
+                    <thead className="bg-pink-100 text-pink-700">
+                        <tr>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
+                            <th className="py-3 px-6 text-right text-xs font-medium uppercase tracking-wider">Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-pink-200">
+                        {permisos.map((permiso) => (
+                            <tr key={permiso.id}>
+                                <td className="py-4 px-6 text-pink-900">{permiso.nombre}</td>
+                                <td className="py-4 px-6 text-right">
+                                    <button
+                                        onClick={() => {
+                                            setEditId(permiso.id);
+                                            setFormState({ nombre: permiso.nombre });
+                                        }}
+                                        className="bg-yellow-500 text-white px-4 py-1 rounded-lg hover:bg-yellow-600 transition ml-2"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => deletePermisos(permiso.id)}
+                                        className="bg-red-500 text-white px-4 py-1 rounded-lg hover:bg-red-600 transition ml-2"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    )
-
+    );
 }
 
 export default Permisos;

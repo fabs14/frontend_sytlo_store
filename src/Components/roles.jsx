@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from './api';
-import { Link } from 'react-router-dom';
 
-const Roles = () => {   //llama a componente
-    const [roles, setRoles] = useState([]);  // useState inicializa como array vacio (los roles), despues actualiza el estado, dependendiendo del back  MOSTRAR   roles= array de roles, setRoles actualiza roles para listarlos. Roles no puede cambiar sin el useState
-    const [formState, setFormState] = useState({ nombre: '' }); // pide los datos requieridos en los inputs del form AGREGAR
-    const [editId, setEditId] = useState(null);  //guarda el id del rol que se va a editar
-    const [errors, setErrors] = useState({}); //manejo de erroresz
+const Roles = () => {
+    const [roles, setRoles] = useState([]);
+    const [formState, setFormState] = useState({ nombre: '' });
+    const [editId, setEditId] = useState(null);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchRoles();
     }, []);
 
     const fetchRoles = async () => {
-        const response = await axios.get('/roles') //espera promesa, axios.get = obtiene datos del back    (viene del index)
-        setRoles(response.data); //datos del back -> cambia el state -> roles ya no esta vacia, se comienza a llenar de datos
-
+        const response = await axios.get('/roles');
+        setRoles(response.data);
     }
 
     const validateForm = () => {
@@ -25,26 +23,26 @@ const Roles = () => {   //llama a componente
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleInputChange = (e) => {  //maneja cambios en los inputs,  e -> evento que sse dispara cuando alguien interactua con el componente (como escribir en un input)
-        const { id, value } = e.target;  //desestructurar, elemento html que provoco el alimento, id atributo que cambia
-        setFormState({ ...formState, [id]: value }); //se actualiza el formState conservando sus demas campos intactos, menos el id que sera el value del input
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setFormState({ ...formState, [id]: value });
     };
 
     const resetForm = () => {
         setFormState({ nombre: '' });
         setErrors({});
-        setEditId(null); // la func pasa a otro valor cuando evento onclick
+        setEditId(null);
     };
 
     const createOrUpdateRol = async () => {
         if (validateForm()) {
             if (editId) {
-                await axios.put(`/roles/${editId}`, formState); //edita/actualiza el valor
+                await axios.put(`/roles/${editId}`, formState);
             } else {
-                await axios.post('/roles', formState); //crea el valor
+                await axios.post('/roles', formState);
             }
-            fetchRoles(); //lista roles
-            resetForm(); // resetea el form
+            fetchRoles();
+            resetForm();
         }
     };
 
@@ -53,61 +51,71 @@ const Roles = () => {   //llama a componente
         fetchRoles();
     }
 
-    //Hacer el crud de categorias (checked), lotes (checked), inventario (checked) y control de calidad , donde tenga una navbar o algun componente donde se pueda navegar entre las pestañas teniendo en cuenta que tienen que estar los anteriores componentes
     return (
-        <div>
-            <nav id='nav-pages'>
-                <ul>
-                    <li><Link to="/">Trazabilidad</Link></li>
-                    <li><Link to="/roles">Roles</Link></li>
-                    <li><Link to="/productos">Productos</Link></li>
-                    <li><Link to="/categorias">Categorias</Link></li>
-                    <li><Link to="/lotes">Lotes</Link></li>
-                    <li><Link to="/inventario">Inventario</Link></li>
-                    <li><Link to="/controlCalidad">Control de Calidad</Link></li>
-                </ul>
-            </nav>
-            <h2>Roles</h2>
-            <div>
+        <div className="min-h-screen bg-pink-50 p-8">
+     
 
-                <label>Nombre Roles:</label>
-                <input type="text"
-                    id="nombre"
-                    placeholder='Ingresar el nombre del rol'
-                    value={formState.nombre}
-                    onChange={handleInputChange}
-                />
-                {errors.nombre && <p style={{ color: 'red' }} >{errors.nombre}</p>}
-                <button onClick={createOrUpdateRol}>{editId ? 'Actualizar Rol' : 'Crear Rol'}</button>
+            <h2 className="text-3xl font-bold text-pink-600 mb-6 text-center">Gestión de Roles</h2>
+
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+                <h3 className="text-xl font-semibold text-pink-600 mb-4">{editId ? 'Editar Rol' : 'Crear Nuevo Rol'}</h3>
+                <div className="mb-4">
+                    <label className="block text-pink-600 font-medium mb-2">Nombre del Rol:</label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        placeholder="Ingresar el nombre del rol"
+                        value={formState.nombre}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-500"
+                    />
+                    {errors.nombre && <p className="text-red-500 mt-2">{errors.nombre}</p>}
+                </div>
+                <button
+                    onClick={createOrUpdateRol}
+                    className="w-full bg-pink-500 text-white py-2 rounded-lg shadow-md hover:bg-pink-600 transition duration-300"
+                >
+                    {editId ? 'Actualizar Rol' : 'Crear Rol'}
+                </button>
             </div>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {roles.map((rol) => (
-                        <tr key={rol.id}>
 
-                            <td>{rol.nombre}</td>
-
-                            <td> <button onClick={() => {
-                                setEditId(rol.id);
-                                setFormState({ nombre: rol.nombre });
-                            }}>Editar</button>
-                                <button onClick={() => deleteRol(rol.id)}>Eliminar</button>
-                            </td>
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-pink-600 mb-4">Lista de Roles</h3>
+                <table className="min-w-full bg-white border border-pink-200 rounded-lg overflow-hidden">
+                    <thead className="bg-pink-100 text-pink-700">
+                        <tr>
+                            <th className="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
+                            <th className="py-3 px-6 text-right text-xs font-medium uppercase tracking-wider">Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-pink-200">
+                        {roles.map((rol) => (
+                            <tr key={rol.id}>
+                                <td className="py-4 px-6 text-pink-900">{rol.nombre}</td>
+                                <td className="py-4 px-6 text-right">
+                                    <button
+                                        onClick={() => {
+                                            setEditId(rol.id);
+                                            setFormState({ nombre: rol.nombre });
+                                        }}
+                                        className="bg-yellow-500 text-white px-4 py-1 rounded-lg hover:bg-yellow-600 transition ml-2"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => deleteRol(rol.id)}
+                                        className="bg-red-500 text-white px-4 py-1 rounded-lg hover:bg-red-600 transition ml-2"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    )
-
+    );
 }
 
-export default Roles;  // exportar
-
-
+export default Roles;
